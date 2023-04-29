@@ -1,23 +1,3 @@
-process runCCP2 {
-  
-  debug true
-  
-  input:
-    path metafile
-    val varsfile
-    val params
-    
-  output:
-    path "reliable.csv"
-  
-  script:
-    """
-    touch reliable.csv
-    echo "circompara2 $params $metafile $varsfile"
-    """
-    
-}
-
 process writeMeta {
   
   debug true
@@ -26,6 +6,7 @@ process writeMeta {
   
   output:
     path "meta.csv", emit: meta
+    tuple val(sample_id), path("${readPair[0]}"), path("${readPair[1]}"), emit: inputFiles
     
   exec:
     metafile = task.workDir.resolve("meta.csv")
@@ -37,4 +18,40 @@ process writeMeta {
     //metafile.text = line
     metafile.text = "sample,file,adapter\n${sample_id},${readPair[0]},${adapter}\n${sample_id},${readPair[1]},${adapter}\n"
 
+}
+
+process readVars {
+  
+  debug true
+  
+  input:
+    path varsfile
+    
+  output:
+    val parameters
+    
+  script:
+    """
+    echo "${varsfile.basename}"
+    """
+}
+
+process runCCP2 {
+  
+  debug true
+  
+  input:
+    path metafile
+    path varsfile
+    tuple val(sample_id), path(reads1), path(reads2)
+    val params
+    
+  output:
+    path "circular_expression/circrna_analyze/reliable_circexp.csv"
+  
+  script:
+    """
+    circompara2 $params
+    """
+    
 }
