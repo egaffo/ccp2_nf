@@ -1,57 +1,68 @@
 process writeMeta {
   
-  debug true
+  debug false
+  
   input:
-    tuple val(sample_id), path(readPair), val(adapter)
+    tuple val(sample_id), val(readPair), val(adapter)
   
   output:
     path "meta.csv", emit: meta
-    tuple val(sample_id), path("${readPair[0]}"), path("${readPair[1]}"), emit: inputFiles
-    
+    tuple val(sample_id), val("${readPair[0]}"), val("${readPair[1]}"), emit: inputFiles
+    val sample_id, emit: sample_id
+  
   exec:
     metafile = task.workDir.resolve("meta.csv")
-    //for reads in readPairs:
-    //  line = "sample,file,adapter\n${sample_id},${reads}"
-    //  if adapter != null:
-    //    line = line + ",${adapter}"
-    //  line = line + "\n"
-    //metafile.text = line
     metafile.text = "sample,file,adapter\n${sample_id},${readPair[0]},${adapter}\n${sample_id},${readPair[1]},${adapter}\n"
-
 }
 
 process readVars {
   
-  debug true
+  debug false
   
   input:
-    path varsfile
+    path in_varsfile
     
   output:
-    val parameters
+    path "vars.py", emit: vars
     
+  /* TODO:
+     scan the parameters from the vars.py file. The variables refering to files
+     or directories, such as the genome indexes, genome FASTA, gene annotations, 
+     etc., must be checked if they exist and passed as output files. In this way,
+     they will be linked into the task's directory.
+  */
+  
   script:
-    """
-    echo "${varsfile.basename}"
-    """
+  """
+  echo "vars.py copied"
+  """
 }
 
 process runCCP2 {
   
-  debug true
+  debug false
+  publishDir "$sample_id", mode: "move"
   
   input:
-    path metafile
-    path varsfile
-    tuple val(sample_id), path(reads1), path(reads2)
-    val params
+    tuple path(meta), path(vars)
+    val sample_id
+    val ccp2params
     
   output:
-    path "circular_expression/circrna_analyze/reliable_circexp.csv"
+    path "circular_expression"
+    path "linear_expression"
+    path "read_statistics"
+    path "samples"
+    path "ccp2.err"
+    path "ccp2.log"
+    path "meta.csv"
+    path "vars.py"
+    path "dbs"
   
-  script:
+  shell:
     """
-    circompara2 $params
+    circompara2 $ccp2params 2> ccp2.err > ccp2.log
+    rm -r '?'
     """
     
 }
