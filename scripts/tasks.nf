@@ -12,7 +12,6 @@ process writeMeta {
   
   exec:
     metafile = task.workDir.resolve("meta.csv")
-    //metafile.text = "sample,file,adapter\n${sample_id},${readPair[0]},${adapter}\n${sample_id},${readPair[1]},${adapter}\n"
     metafile.text = ["sample,file,adapter", 
                      "${sample_id},${readPair[0]},${adapter}", 
                      "${sample_id},${readPair[1]},${adapter}"].join("\n")
