@@ -59,7 +59,7 @@ process runCCP2 {
     path "ccp2.log"
     path "meta.csv"
     path "vars.py"
-    path "dbs"
+    path "dbs", optional: true
   
   shell:
     """
