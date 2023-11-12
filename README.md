@@ -22,4 +22,4 @@ NB: the meta.csv file must be declared into the vars.py
 META = 'meta.csv'
 ```
 
-Use the combine_ccp2_runs() function from the cc2tools package to merge the samples' output.  
+Use the combine_ccp2_runs() function from the ccp2tools package to merge the samples' output.  
